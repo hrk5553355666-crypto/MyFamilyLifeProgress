@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Life Dashboard</title>
+<style>
+  body {
+    font-family: 'Helvetica Neue', sans-serif;
+    background: #0d0d1a;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    min-height: 100vh;
+  }
+
+  h1 {
+    color: #00ffff;
+    font-size: 3em;
+    margin-bottom: 30px;
+    text-align: center;
+    text-shadow: 2px 2px #000000;
+  }
+
+  .person {
+    background: linear-gradient(145deg, #1a1a2e, #2e2e4d);
+    width: 90%;
+    max-width: 600px;
+    padding: 25px;
+    border-radius: 20px;
+    margin: 15px 0;
+    text-align: center;
+    font-size: 1.6em;
+    box-shadow: 0px 6px 15px rgba(0,255,195,0.5);
+    border: 2px solid #00ffc3;
+    transition: transform 0.3s;
+  }
+
+  .person:hover {
+    transform: scale(1.03);
+  }
+
+  .label {
+    font-weight: bold;
+    color: #ff6f61;
+    font-size: 2em;
+    margin-bottom: 10px;
+  }
+
+  .age {
+    font-size: 1.8em;
+    color: #00ffff;
+    margin: 5px 0;
+    text-shadow: 1px 1px #000000;
+  }
+
+  .time-left {
+    font-size: 1.5em;
+    color: #ffd700;
+    margin-top: 10px;
+    text-shadow: 1px 1px #222222;
+  }
+
+  .total-left {
+    font-size: 1.5em;
+    color: limegreen; /* total time left in green */
+    font-weight: bold;
+    margin-top: 5px;
+    text-shadow: 1px 1px #111;
+  }
+
+  .progress {
+    background: #444;
+    width: 100%;
+    height: 25px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 15px;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(to right, #00ffc3, #00ffff);
+    width: 0%;
+    transition: width 0.5s;
+  }
+
+</style>
+</head>
+<body>
+
+<h1>🌟 Life Dashboard 🌟</h1>
+
+<div id="dashboard"></div>
+
+<script>
+const people = [
+  {name:"Rajesh", dob:"1992-06-17T12:22:00", lifespan:65},
+  {name:"Shital", dob:"1993-12-24T11:15:00", lifespan:65},
+  {name:"Datta Ram", dob:"1964-10-30T12:00:00", lifespan:70},
+  {name:"Saritha[Mommy]", dob:"1970-01-01T12:00:00", lifespan:70},
+  {name:"Rakesh", dob:"1991-01-31T12:00:00", lifespan:65},
+  {name:"Risha", dob:"2024-12-24T12:00:00", lifespan:60}
+];
+
+function calculateAge(dob){
+  const birth = new Date(dob);
+  const now = new Date();
+  let diff = now - birth;
+  let years = Math.floor(diff / (1000*60*60*24*365.25));
+  diff -= years * (1000*60*60*24*365.25);
+  let months = Math.floor(diff / (1000*60*60*24*30.4375));
+  diff -= months * (1000*60*60*24*30.4375);
+  let days = Math.floor(diff / (1000*60*60*24));
+  diff -= days * (1000*60*60*24);
+  let hours = Math.floor(diff / (1000*60*60));
+  diff -= hours * (1000*60*60);
+  let minutes = Math.floor(diff / (1000*60));
+  diff -= minutes * (1000*60);
+  let seconds = Math.floor(diff / 1000);
+  return {years, months, days, hours, minutes, seconds};
+}
+
+function timeLeft(dob, lifespan){
+  const birth = new Date(dob);
+  const end = new Date(birth.getFullYear() + lifespan, birth.getMonth(), birth.getDate(), birth.getHours(), birth.getMinutes());
+  const now = new Date();
+  let diff = end - now;
+  if(diff<0) return {years:0, months:0, days:0, hours:0, minutes:0, seconds:0};
+  let years = Math.floor(diff / (1000*60*60*24*365.25));
+  diff -= years * (1000*60*60*24*365.25);
+  let months = Math.floor(diff / (1000*60*60*24*30.4375));
+  diff -= months * (1000*60*60*24*30.4375);
+  let days = Math.floor(diff / (1000*60*60*24));
+  diff -= days * (1000*60*60*24);
+  let hours = Math.floor(diff / (1000*60*60));
+  diff -= hours * (1000*60*60);
+  let minutes = Math.floor(diff / (1000*60));
+  diff -= minutes * (1000*60);
+  let seconds = Math.floor(diff / 1000);
+  return {years, months, days, hours, minutes, seconds};
+}
+
+function updateDashboard(){
+  const dashboardDiv = document.getElementById("dashboard");
+  dashboardDiv.innerHTML = "";
+  people.forEach(person => {
+    const age = calculateAge(person.dob);
+    const left = timeLeft(person.dob, person.lifespan);
+
+    // Total hours, minutes, seconds left
+    const totalHours = Math.floor(left.years*365.25*24 + left.months*30.4375*24 + left.days*24 + left.hours);
+    const totalMinutes = totalHours*60 + left.minutes;
+    const totalSeconds = totalMinutes*60 + left.seconds;
+
+    const percent = ((age.years + age.months/12 + age.days/365.25)/person.lifespan)*100;
+    const div = document.createElement("div");
+    div.className = "person";
+    div.innerHTML = `
+      <div class="label">${person.name}</div>
+      <div class="age">${age.years}y ${age.months}m ${age.days}d ${age.hours}h ${age.minutes}m ${age.seconds}s</div>
+      <div class="time-left">⏳ Time Left: ${left.years}y ${left.months}m ${left.days}d ${left.hours}h ${left.minutes}m ${left.seconds}s</div>
+      <div class="total-left">🟢 Total: ${totalHours}h | ${totalMinutes}m | ${totalSeconds}s</div>
+      <div class="progress"><div class="progress-bar" style="width:${percent}%"></div></div>
+    `;
+    dashboardDiv.appendChild(div);
+  });
+}
+
+setInterval(updateDashboard, 1000);
+updateDashboard();
+</script>
+
+</body>
+</html>
